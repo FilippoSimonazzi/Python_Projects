@@ -1,0 +1,159 @@
+from utils import read_file, timer
+from itertools import compress
+from collections import defaultdict
+
+def addr(register, A, B, C):
+    new_register = register.copy()
+    new_register[C] = register[A] + register[B]
+    return new_register
+
+def addi(register, A, B, C):
+    new_register = register.copy()
+    new_register[C] = register[A] + B
+    return new_register
+
+def mulr(register, A, B, C):
+    new_register = register.copy()
+    new_register[C] = register[A] * register[B]
+    return new_register
+
+def muli(register, A, B, C):
+    new_register = register.copy()
+    new_register[C] = register[A] * B
+    return new_register
+
+def banr(register, A, B, C):
+    new_register = register.copy()
+    new_register[C] = register[A] & register[B]
+    return new_register
+
+def bani(register, A, B, C):
+    new_register = register.copy()
+    new_register[C] = register[A] & B
+    return new_register
+
+def borr(register, A, B, C):
+    new_register = register.copy()
+    new_register[C] = register[A] | register[B]
+    return new_register
+
+def bori(register, A, B, C):
+    new_register = register.copy()
+    new_register[C] = register[A] | B
+    return new_register
+
+def setr(register, A, B, C):
+    new_register = register.copy()
+    new_register[C] = register[A]
+    return new_register
+
+def seti(register, A, B, C):
+    new_register = register.copy()
+    new_register[C] = A
+    return new_register
+
+def gtir(register, A, B, C):
+    new_register = register.copy()
+    if A > register[B]:
+        new_register[C] = 1
+    else:
+        new_register[C] = 0
+    return new_register
+
+def gtri(register, A, B, C):
+    new_register = register.copy()
+    if register[A] > B:
+        new_register[C] = 1
+    else:
+        new_register[C] = 0
+    return new_register
+
+def gtrr(register, A, B, C):
+    new_register = register.copy()
+    if register[A] > register[B]:
+        new_register[C] = 1
+    else:
+        new_register[C] = 0
+    return new_register
+
+def eqir(register, A, B, C):
+    new_register = register.copy()
+    if A == register[B]:
+        new_register[C] = 1
+    else:
+        new_register[C] = 0
+    return new_register
+
+def eqri(register, A, B, C):
+    new_register = register.copy()
+    if register[A] == B:
+        new_register[C] = 1
+    else:
+        new_register[C] = 0
+    return new_register
+
+def eqrr(register, A, B, C):
+    new_register = register.copy()
+    if register[A] == register[B]:
+        new_register[C] = 1
+    else:
+        new_register[C] = 0
+    return new_register
+
+funcs = {
+    'addr': addr,
+    'addi': addi,
+    'mulr': mulr,
+    'muli': muli,
+    'banr': banr,
+    'bani': bani,
+    'borr': borr,
+    'bori': bori,
+    'setr': setr,
+    'seti': seti,
+    'gtir': gtir,
+    'gtri': gtri,
+    'gtrr': gtrr,
+    'eqir': eqir,
+    'eqri': eqri,
+    'eqrr': eqrr,
+}
+
+
+def read_input(input):
+    instructions = []
+    i = 0
+    while i < len(input):
+        before = [int(x) for x in input[i].split(': [')[-1][:-1].split(', ')]
+        command = [int(x) for x in input[i + 1].split()]
+        after = [int(x) for x in input[i + 2].split(':  [')[-1][:-1].split(', ')]
+        i += 4
+        instructions.append((before, command, after))
+    return instructions
+
+
+def test(instruction, funcs):
+    before = instruction[0]
+    code, A, B, C = instruction[1]
+    after = instruction[2]
+    output = []
+    for key in funcs.keys():
+        tmp_register = funcs[key].__call__(before, A, B, C)
+        if tmp_register == after:
+            output.append(key)
+    return code, output
+
+@timer
+def solve():
+    result = 0
+    input = read_file("16")
+    instructions = read_input(input)
+    for i in range(len(instructions)):
+        _, output = test(instructions[i], funcs)
+        true_idx = [i for i, x in enumerate(output) if x]
+        if len(true_idx) >= 3:
+            result += 1
+    return result
+
+result = solve()
+print(f'Solution: {result}')
